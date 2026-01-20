@@ -69,20 +69,39 @@ jobs:
         run: |
           cd manifold
           # Try various CMake configurations for different manifold versions
+          # Disable optional features that may fail on older versions
+          COMMON_FLAGS="-DMANIFOLD_TEST=OFF -DMANIFOLD_PYBIND=OFF -DMANIFOLD_JSBIND=OFF -DMANIFOLD_CBIND=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+
           if cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DMANIFOLD_PAR=TBB \
-            -DMANIFOLD_TEST=OFF 2>/dev/null; then
-            cmake --build build -j$(nproc)
-            echo "manifold_built=true" >> $GITHUB_OUTPUT
+            $COMMON_FLAGS 2>/dev/null; then
+            # Try to build just the manifold library target
+            if cmake --build build --target manifold -j$(nproc) 2>/dev/null; then
+              echo "manifold_built=true" >> $GITHUB_OUTPUT
+              echo "::notice::Manifold library built successfully with TBB"
+            else
+              # Fall back to building all
+              if cmake --build build -j$(nproc) 2>/dev/null; then
+                echo "manifold_built=true" >> $GITHUB_OUTPUT
+              else
+                echo "manifold_built=false" >> $GITHUB_OUTPUT
+              fi
+            fi
           elif cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DMANIFOLD_PAR=ON 2>/dev/null; then
-            cmake --build build -j$(nproc)
-            echo "manifold_built=true" >> $GITHUB_OUTPUT
+            -DMANIFOLD_PAR=ON \
+            $COMMON_FLAGS 2>/dev/null; then
+            cmake --build build --target manifold -j$(nproc) 2>/dev/null || \
+            cmake --build build -j$(nproc) 2>/dev/null
+            if [ -f build/src/manifold/libmanifold.a ] || [ -f build/src/libmanifold.a ]; then
+              echo "manifold_built=true" >> $GITHUB_OUTPUT
+            else
+              echo "manifold_built=false" >> $GITHUB_OUTPUT
+            fi
           else
             echo "manifold_built=false" >> $GITHUB_OUTPUT
-            echo "::warning::Failed to build manifold for ${{ matrix.tag }}"
+            echo "::warning::Failed to configure manifold for ${{ matrix.tag }}"
           fi
 
       - name: Build benchmarks
