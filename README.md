@@ -122,3 +122,4 @@ To add new benchmarks:
 ## License
 
 Same license as [manifold](https://github.com/elalish/manifold) (Apache 2.0).
+
