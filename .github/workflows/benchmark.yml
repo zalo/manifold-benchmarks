@@ -114,6 +114,16 @@ jobs:
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: bench
 
+      - name: Deploy custom dashboard
+        run: |
+          git fetch origin gh-pages
+          git checkout gh-pages
+          cp ${{ github.workspace }}/bench-template/index.html bench/index.html
+          git add bench/index.html
+          git diff --cached --quiet || git commit -m "Update custom dashboard"
+          git push origin gh-pages
+          git checkout -
+
       - name: Save benchmark log
         run: |
           mkdir -p logs

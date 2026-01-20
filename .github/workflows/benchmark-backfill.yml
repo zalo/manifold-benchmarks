@@ -171,6 +171,17 @@ jobs:
           # Use tag name in commit message for identification
           commit-msg-template: 'Benchmark: ${{ matrix.tag }} ({{ commit.id }})'
 
+      - name: Deploy custom dashboard
+        if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
+        run: |
+          git fetch origin gh-pages
+          git checkout gh-pages
+          cp ${{ github.workspace }}/bench-template/index.html bench/index.html
+          git add bench/index.html
+          git diff --cached --quiet || git commit -m "Update custom dashboard"
+          git push origin gh-pages || true  # May fail if another job pushed first
+          git checkout -
+
       - name: Save backfill log
         if: always()
         run: |
