@@ -157,17 +157,6 @@ jobs:
           COMMIT_DATE=$(git log -1 --format=%cI)
           echo "date=$COMMIT_DATE" >> $GITHUB_OUTPUT
 
-      - name: Create tag marker commit
-        if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
-        run: |
-          # Create a temporary commit that marks this as a backfill for the tag
-          # This commit message will be captured by the benchmark-action
-          git config user.name "Manifold Benchmarks"
-          git config user.email "benchmarks@manifold.dev"
-          echo "${{ matrix.tag }}" > .benchmark_tag
-          git add .benchmark_tag
-          git commit -m "Benchmark: ${{ matrix.tag }}" --allow-empty || true
-
       - name: Store historical result
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
         uses: benchmark-action/github-action-benchmark@v1
@@ -179,23 +168,49 @@ jobs:
           auto-push: true
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: bench
-          # Use tag name in commit message for identification
           commit-msg-template: 'Benchmark: ${{ matrix.tag }} ({{ commit.id }})'
 
-      - name: Revert tag marker commit
-        if: always() && steps.build-benchmarks.outputs.benchmarks_built == 'true'
-        run: |
-          git reset --hard HEAD~1 || true
-
-      - name: Deploy custom dashboard
+      - name: Update data.js with tag info
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
         run: |
+          # Post-process data.js to add tag info to the most recent benchmark entry
           git fetch origin gh-pages
           git checkout gh-pages
+
+          # Update the commit message in data.js for the most recent entry
+          # This modifies the last entry's commit.message to include the tag
+          python3 << 'PYTHON_SCRIPT'
+          import json
+          import re
+
+          # Read data.js
+          with open('bench/data.js', 'r') as f:
+              content = f.read()
+
+          # Extract JSON part (after 'window.BENCHMARK_DATA = ')
+          json_str = content.replace('window.BENCHMARK_DATA = ', '')
+          data = json.loads(json_str)
+
+          # Get the entries for "Manifold Performance"
+          entries = data.get('entries', {}).get('Manifold Performance', [])
+          if entries:
+              # Update the most recent entry's commit message to include the tag
+              latest = entries[-1]
+              old_msg = latest['commit'].get('message', '')
+              if not old_msg.startswith('Benchmark:'):
+                  latest['commit']['message'] = 'Benchmark: ${{ matrix.tag }}\n\n' + old_msg
+
+          # Write back
+          with open('bench/data.js', 'w') as f:
+              f.write('window.BENCHMARK_DATA = ' + json.dumps(data, indent=2))
+          PYTHON_SCRIPT
+
+          # Also update the custom index.html
           cp ${{ github.workspace }}/bench-template/index.html bench/index.html
-          git add bench/index.html
-          git diff --cached --quiet || git commit -m "Update custom dashboard"
-          git push origin gh-pages || true  # May fail if another job pushed first
+
+          git add bench/data.js bench/index.html
+          git diff --cached --quiet || git commit -m "Update benchmark data for ${{ matrix.tag }}"
+          git push origin gh-pages || true
           git checkout -
 
       - name: Save backfill log
