@@ -55,7 +55,7 @@ Results are stored in the `gh-pages` branch and visualized using [github-action-
 
 ```bash
 # Clone this repo
-git clone https://github.com/elalish/manifold-benchmarks.git
+git clone https://github.com/zalo/manifold-benchmarks.git
 cd manifold-benchmarks
 
 # Clone and build manifold
