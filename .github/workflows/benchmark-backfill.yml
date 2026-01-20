@@ -1,6 +1,11 @@
 name: Backfill Historical Benchmarks
 
 on:
+  # TEMPORARY: Push trigger to register workflow (will be removed)
+  push:
+    branches: [master]
+    paths: ['.github/workflows/benchmark-backfill.yml']
+
   workflow_dispatch:
     inputs:
       tags:
