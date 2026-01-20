@@ -173,6 +173,9 @@ jobs:
       - name: Update data.js with tag info
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
         run: |
+          # Save the index.html before switching branches
+          cp bench-template/index.html /tmp/custom_index.html
+
           # Post-process data.js to add tag info to the most recent benchmark entry
           git fetch origin gh-pages
           git checkout gh-pages
@@ -181,7 +184,6 @@ jobs:
           # This modifies the last entry's commit.message to include the tag
           python3 << 'PYTHON_SCRIPT'
           import json
-          import re
 
           # Read data.js
           with open('bench/data.js', 'r') as f:
@@ -205,8 +207,8 @@ jobs:
               f.write('window.BENCHMARK_DATA = ' + json.dumps(data, indent=2))
           PYTHON_SCRIPT
 
-          # Also update the custom index.html
-          cp ${{ github.workspace }}/bench-template/index.html bench/index.html
+          # Copy the custom index.html from tmp
+          cp /tmp/custom_index.html bench/index.html
 
           git add bench/data.js bench/index.html
           git diff --cached --quiet || git commit -m "Update benchmark data for ${{ matrix.tag }}"
