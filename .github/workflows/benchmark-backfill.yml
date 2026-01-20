@@ -6,7 +6,7 @@ on:
       tags:
         description: 'Comma-separated tags to benchmark (e.g., v3.0.0,v3.1.0,v3.2.0)'
         required: true
-        default: 'v3.0.0,v3.1.0,v3.2.0,v3.3.0'
+        default: 'v1.0.0,v2.0.0,v2.3.0,v2.5.0,v3.0.0,v3.2.0,v3.3.0'
 
 permissions:
   contents: write
@@ -107,6 +107,15 @@ jobs:
             --benchmark_repetitions=3 \
             --benchmark_report_aggregates_only=true
 
+      - name: Get tag commit date
+        if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
+        id: tag-date
+        run: |
+          cd manifold
+          # Get the commit date for proper ordering in the graph
+          COMMIT_DATE=$(git log -1 --format=%cI)
+          echo "date=$COMMIT_DATE" >> $GITHUB_OUTPUT
+
       - name: Store historical result
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
         uses: benchmark-action/github-action-benchmark@v1
@@ -118,6 +127,8 @@ jobs:
           auto-push: true
           gh-pages-branch: gh-pages
           benchmark-data-dir-path: bench
+          # Use tag name in commit message for identification
+          commit-msg-template: 'Benchmark: ${{ matrix.tag }} ({{ commit.id }})'
 
       - name: Save backfill log
         if: always()
