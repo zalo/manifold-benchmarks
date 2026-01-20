@@ -157,6 +157,17 @@ jobs:
           COMMIT_DATE=$(git log -1 --format=%cI)
           echo "date=$COMMIT_DATE" >> $GITHUB_OUTPUT
 
+      - name: Create tag marker commit
+        if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
+        run: |
+          # Create a temporary commit that marks this as a backfill for the tag
+          # This commit message will be captured by the benchmark-action
+          git config user.name "Manifold Benchmarks"
+          git config user.email "benchmarks@manifold.dev"
+          echo "${{ matrix.tag }}" > .benchmark_tag
+          git add .benchmark_tag
+          git commit -m "Benchmark: ${{ matrix.tag }}" --allow-empty || true
+
       - name: Store historical result
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
         uses: benchmark-action/github-action-benchmark@v1
@@ -170,6 +181,11 @@ jobs:
           benchmark-data-dir-path: bench
           # Use tag name in commit message for identification
           commit-msg-template: 'Benchmark: ${{ matrix.tag }} ({{ commit.id }})'
+
+      - name: Revert tag marker commit
+        if: always() && steps.build-benchmarks.outputs.benchmarks_built == 'true'
+        run: |
+          git reset --hard HEAD~1 || true
 
       - name: Deploy custom dashboard
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
