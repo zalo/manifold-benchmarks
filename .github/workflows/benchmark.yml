@@ -1,11 +1,6 @@
 name: Performance Benchmarks
 
 on:
-  # TEMPORARY: Push trigger to register workflow (will be removed)
-  push:
-    branches: [master]
-    paths: ['.github/workflows/benchmark.yml']
-
   # Triggered by manifold repo via repository_dispatch
   repository_dispatch:
     types: [benchmark]
