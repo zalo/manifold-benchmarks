@@ -1,0 +1,150 @@
+name: Backfill Historical Benchmarks
+
+on:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Comma-separated tags to benchmark (e.g., v3.0.0,v3.1.0,v3.2.0)'
+        required: true
+        default: 'v3.0.0,v3.1.0,v3.2.0,v3.3.0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backfill
+  cancel-in-progress: false
+
+jobs:
+  # First job: Convert comma-separated tags to JSON array for matrix
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Convert tags to matrix
+        id: set-matrix
+        run: |
+          TAGS='${{ inputs.tags }}'
+          # Convert "v3.0.0,v3.1.0" to JSON array ["v3.0.0","v3.1.0"]
+          JSON_ARRAY=$(echo "$TAGS" | jq -R -c 'split(",") | map(gsub("^\\s+|\\s+$"; ""))')
+          echo "matrix={\"tag\":$JSON_ARRAY}" >> $GITHUB_OUTPUT
+          echo "Matrix: {\"tag\":$JSON_ARRAY}"
+
+  backfill:
+    needs: prepare
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      max-parallel: 1  # Run sequentially to avoid gh-pages conflicts
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+
+    steps:
+      - name: Checkout benchmark repo
+        uses: actions/checkout@v4
+
+      - name: Clone manifold at tag
+        id: clone
+        run: |
+          # Try with submodules first, fall back to without
+          git clone --recurse-submodules --depth 1 --branch ${{ matrix.tag }} \
+            https://github.com/elalish/manifold.git manifold 2>/dev/null || \
+          git clone --depth 1 --branch ${{ matrix.tag }} \
+            https://github.com/elalish/manifold.git manifold
+
+          cd manifold
+          echo "MANIFOLD_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "Benchmarking manifold @ ${{ matrix.tag }} ($(git rev-parse --short HEAD))"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libtbb-dev
+
+      - name: Build manifold
+        id: build-manifold
+        run: |
+          cd manifold
+          # Try various CMake configurations for different manifold versions
+          if cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMANIFOLD_PAR=TBB \
+            -DMANIFOLD_TEST=OFF 2>/dev/null; then
+            cmake --build build -j$(nproc)
+            echo "manifold_built=true" >> $GITHUB_OUTPUT
+          elif cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMANIFOLD_PAR=ON 2>/dev/null; then
+            cmake --build build -j$(nproc)
+            echo "manifold_built=true" >> $GITHUB_OUTPUT
+          else
+            echo "manifold_built=false" >> $GITHUB_OUTPUT
+            echo "::warning::Failed to build manifold for ${{ matrix.tag }}"
+          fi
+
+      - name: Build benchmarks
+        id: build-benchmarks
+        if: steps.build-manifold.outputs.manifold_built == 'true'
+        run: |
+          if cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMANIFOLD_PATH=${{ github.workspace }}/manifold 2>/dev/null; then
+            cmake --build build -j$(nproc)
+            echo "benchmarks_built=true" >> $GITHUB_OUTPUT
+          else
+            echo "benchmarks_built=false" >> $GITHUB_OUTPUT
+            echo "::warning::Failed to build benchmarks for ${{ matrix.tag }}"
+          fi
+
+      - name: Run benchmarks
+        if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
+        run: |
+          ./build/manifold_benchmark \
+            --benchmark_format=json \
+            --benchmark_out=benchmark_results.json \
+            --benchmark_repetitions=3 \
+            --benchmark_report_aggregates_only=true
+
+      - name: Store historical result
+        if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: 'Manifold Performance'
+          tool: 'googlecpp'
+          output-file-path: benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: bench
+
+      - name: Save backfill log
+        if: always()
+        run: |
+          mkdir -p logs
+          echo "Tag: ${{ matrix.tag }}" > "logs/backfill_${{ matrix.tag }}_status.txt"
+          echo "SHA: ${{ env.MANIFOLD_SHA }}" >> "logs/backfill_${{ matrix.tag }}_status.txt"
+          echo "Manifold built: ${{ steps.build-manifold.outputs.manifold_built }}" >> "logs/backfill_${{ matrix.tag }}_status.txt"
+          echo "Benchmarks built: ${{ steps.build-benchmarks.outputs.benchmarks_built }}" >> "logs/backfill_${{ matrix.tag }}_status.txt"
+          echo "Timestamp: $(date -Iseconds)" >> "logs/backfill_${{ matrix.tag }}_status.txt"
+          if [ -f benchmark_results.json ]; then
+            cp benchmark_results.json "logs/backfill_${{ matrix.tag }}_results.json"
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backfill-${{ matrix.tag }}
+          path: logs/
+          retention-days: 90
+
+      - name: Report status
+        if: always()
+        run: |
+          if [ "${{ steps.build-benchmarks.outputs.benchmarks_built }}" = "true" ]; then
+            echo "::notice::Successfully benchmarked ${{ matrix.tag }}"
+          else
+            echo "::warning::Failed to benchmark ${{ matrix.tag }}"
+          fi
