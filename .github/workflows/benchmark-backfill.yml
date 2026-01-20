@@ -180,6 +180,10 @@ jobs:
           git fetch origin gh-pages
           git checkout gh-pages
 
+          # Configure git identity for the commit
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
           # Update the commit message in data.js for the most recent entry
           # This modifies the last entry's commit.message to include the tag
           python3 << 'PYTHON_SCRIPT'
