@@ -1,0 +1,143 @@
+name: Performance Benchmarks
+
+on:
+  # Triggered by manifold repo via repository_dispatch
+  repository_dispatch:
+    types: [benchmark]
+
+  # Manual triggers for testing
+  workflow_dispatch:
+    inputs:
+      manifold_ref:
+        description: 'Manifold git ref (commit SHA, tag, or branch)'
+        required: true
+        default: 'master'
+
+  # Weekly backup run in case dispatch fails
+  schedule:
+    - cron: '0 3 * * 0'  # Sunday 3 AM UTC
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: benchmark-${{ github.event.client_payload.sha || github.event.inputs.manifold_ref || 'scheduled' }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout benchmark repo
+        uses: actions/checkout@v4
+
+      - name: Determine manifold ref
+        id: ref
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "ref=${{ github.event.client_payload.sha }}" >> $GITHUB_OUTPUT
+            echo "display_ref=${{ github.event.client_payload.ref }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ref=${{ github.event.inputs.manifold_ref }}" >> $GITHUB_OUTPUT
+            echo "display_ref=${{ github.event.inputs.manifold_ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "ref=master" >> $GITHUB_OUTPUT
+            echo "display_ref=master (scheduled)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Clone manifold
+        run: |
+          git clone --recurse-submodules https://github.com/elalish/manifold.git manifold
+          cd manifold
+          git fetch origin ${{ steps.ref.outputs.ref }}
+          git checkout FETCH_HEAD
+          echo "MANIFOLD_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "Benchmarking manifold @ $(git rev-parse --short HEAD)"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libtbb-dev
+
+      - name: Build manifold
+        run: |
+          cd manifold
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMANIFOLD_PAR=TBB \
+            -DMANIFOLD_TEST=OFF
+          cmake --build build -j$(nproc)
+
+      - name: Build benchmarks
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DMANIFOLD_PATH=${{ github.workspace }}/manifold
+          cmake --build build -j$(nproc)
+
+      - name: Run benchmarks
+        run: |
+          ./build/manifold_benchmark \
+            --benchmark_format=json \
+            --benchmark_out=benchmark_results.json \
+            --benchmark_repetitions=5 \
+            --benchmark_report_aggregates_only=true
+
+      - name: Validate benchmark output
+        run: |
+          if [ ! -f benchmark_results.json ]; then
+            echo "ERROR: Benchmark output file not found"
+            exit 1
+          fi
+          if ! jq empty benchmark_results.json 2>/dev/null; then
+            echo "ERROR: Invalid JSON in benchmark results"
+            exit 1
+          fi
+          BENCH_COUNT=$(jq '.benchmarks | length' benchmark_results.json)
+          echo "Found $BENCH_COUNT benchmark results"
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: 'Manifold Performance'
+          tool: 'googlecpp'
+          output-file-path: benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          alert-threshold: '150%'
+          comment-on-alert: false
+          fail-on-alert: false
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: bench
+
+      - name: Save benchmark log
+        run: |
+          mkdir -p logs
+          cp benchmark_results.json "logs/benchmark_${MANIFOLD_SHA}_$(date +%Y%m%d_%H%M%S).json"
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-log-${{ env.MANIFOLD_SHA }}
+          path: logs/
+          retention-days: 90
+
+      - name: Add job summary
+        run: |
+          echo "## Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Manifold ref:** \`${{ steps.ref.outputs.display_ref }}\` (${{ env.MANIFOLD_SHA }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View Dashboard](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/bench/)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f benchmark_results.json ]; then
+            echo "### Key Metrics" >> $GITHUB_STEP_SUMMARY
+            jq -r '.benchmarks[] | select(.name | endswith("_mean")) | "- **" + .name + "**: " + ((.real_time | . * 100 | floor | . / 100) | tostring) + " " + .time_unit' \
+              benchmark_results.json >> $GITHUB_STEP_SUMMARY 2>/dev/null || \
+            jq -r '.benchmarks[] | "- **" + .name + "**: " + ((.real_time | . * 100 | floor | . / 100) | tostring) + " " + .time_unit' \
+              benchmark_results.json >> $GITHUB_STEP_SUMMARY 2>/dev/null || true
+          fi
