@@ -83,7 +83,7 @@
         max-width: 1000px;
       }
     </style>
-    <title>Benchmarks</title>
+    <title>Manifold Benchmarks</title>
   </head>
 
   <body>
@@ -125,6 +125,17 @@
           customSmallerIsBetter: '#ff3838',
           _: '#333333'
         };
+
+        // Extract tag from commit message if it's a backfill (format: "Benchmark: v1.2.3 (abc123...)")
+        function getDisplayLabel(commit) {
+          const msg = commit.message || '';
+          const tagMatch = msg.match(/^Benchmark:\s*(v[\d.]+)/);
+          if (tagMatch) {
+            return tagMatch[1];
+          }
+          // Fall back to short commit hash
+          return commit.id.slice(0, 7);
+        }
 
         function init() {
           function collectBenchesPerTestCase(entries) {
@@ -177,7 +188,8 @@
 
             const color = toolColors[dataset.length > 0 ? dataset[0].tool : '_'];
             const data = {
-              labels: dataset.map(d => d.commit.id.slice(0, 7)),
+              // Use getDisplayLabel to show tags for backfills
+              labels: dataset.map(d => getDisplayLabel(d.commit)),
               datasets: [
                 {
                   label: name,
@@ -193,7 +205,7 @@
                   {
                     scaleLabel: {
                       display: true,
-                      labelString: 'commit',
+                      labelString: 'version / commit',
                     },
                   }
                 ],
