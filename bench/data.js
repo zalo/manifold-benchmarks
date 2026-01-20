@@ -743,7 +743,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.0000219124012246768,
+            "value": 2.19124012246768e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000021917618950799912 ms\nthreads: 1"
           },
@@ -767,7 +767,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 0.00007599811162925837,
+            "value": 7.599811162925837e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00007606446896043796 ms\nthreads: 1"
           },
@@ -1277,7 +1277,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_Volume/128_cv",
-            "value": 0.00008395448348648178,
+            "value": 8.395448348648178e-05,
             "unit": "ns/iter",
             "extra": "iterations: 3\ncpu: 0.00008132736317420054 ns\nthreads: 1"
           },
@@ -2362,7 +2362,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000019907372501639957,
+            "value": 1.9907372501639957e-05,
             "unit": "ms/iter",
             "extra": "iterations: 5\ncpu: 0.000019902562782357727 ms\nthreads: 1"
           },
@@ -3979,7 +3979,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000035707314824193925,
+            "value": 3.5707314824193925e-05,
             "unit": "ms/iter",
             "extra": "iterations: 5\ncpu: 0.000035743943973453285 ms\nthreads: 1"
           },
@@ -5596,7 +5596,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000028280439200009867,
+            "value": 2.8280439200009867e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000028256010406723787 ms\nthreads: 1"
           },
@@ -5620,7 +5620,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 0.000043780807836252554,
+            "value": 4.3780807836252554e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000043711122317348106 ms\nthreads: 1"
           },
@@ -5842,7 +5842,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_Transform/32_cv",
-            "value": 0.00006972325181972871,
+            "value": 6.972325181972871e-05,
             "unit": "ns/iter",
             "extra": "iterations: 3\ncpu: 0.00008360673690255917 ns\nthreads: 1"
           },
@@ -7213,7 +7213,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.00005585663782143824,
+            "value": 5.585663782143824e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00005586280198848831 ms\nthreads: 1"
           },
@@ -8830,7 +8830,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000003758173456923062,
+            "value": 3.758173456923062e-06,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.0000037431713490296035 ms\nthreads: 1"
           },
@@ -8854,7 +8854,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 0.00002511733619478605,
+            "value": 2.511733619478605e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000026295646740502293 ms\nthreads: 1"
           },
@@ -8998,7 +8998,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_ParallelEfficiency/1000/real_time_stddev",
-            "value": 0.00005809247938755589,
+            "value": 5.809247938755589e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.0000579446252282913 ms\nthreads: 1"
           },
@@ -10447,7 +10447,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000020143036296805476,
+            "value": 2.0143036296805476e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000020165919897457484 ms\nthreads: 1"
           },
@@ -10471,7 +10471,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 0.000019311514063548126,
+            "value": 1.9311514063548126e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000019579335423207757 ms\nthreads: 1"
           },
@@ -10495,7 +10495,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/1000_stddev",
-            "value": 0.00007681588946854507,
+            "value": 7.681588946854507e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.0000747770568489974 ms\nthreads: 1"
           },
@@ -10615,7 +10615,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_ParallelEfficiency/1000/real_time_stddev",
-            "value": 0.00006313233732308135,
+            "value": 6.313233732308135e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00006283479182785116 ms\nthreads: 1"
           },
@@ -12064,7 +12064,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.0000832781291420205,
+            "value": 8.32781291420205e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00008329783020143123 ms\nthreads: 1"
           },
@@ -13681,7 +13681,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.0000462138351191962,
+            "value": 4.62138351191962e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000046233572431012364 ms\nthreads: 1"
           },
@@ -15298,7 +15298,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000024228169341024123,
+            "value": 2.4228169341024123e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000024184771343836765 ms\nthreads: 1"
           },
@@ -15322,7 +15322,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 0.00007018237553057434,
+            "value": 7.018237553057434e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00007025124441379343 ms\nthreads: 1"
           },
@@ -15346,7 +15346,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/1000_stddev",
-            "value": 0.00007825607635577231,
+            "value": 7.825607635577231e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00007789689569374861 ms\nthreads: 1"
           },
@@ -16915,7 +16915,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.00004437441737352826,
+            "value": 4.437441737352826e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000044407175105502394 ms\nthreads: 1"
           },
@@ -16963,7 +16963,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/1000_stddev",
-            "value": 0.00006362402966989663,
+            "value": 6.362402966989663e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.0000627996547696067 ms\nthreads: 1"
           },
@@ -18532,7 +18532,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000009746256493669116,
+            "value": 9.746256493669116e-06,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000009720088076980686 ms\nthreads: 1"
           },
@@ -18556,7 +18556,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 0.00008096534051178627,
+            "value": 8.096534051178627e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00008091438658867395 ms\nthreads: 1"
           },
@@ -18700,7 +18700,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_ParallelEfficiency/1000/real_time_stddev",
-            "value": 0.00006387537142524343,
+            "value": 6.387537142524343e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00006288083802216637 ms\nthreads: 1"
           },
@@ -20149,7 +20149,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.00008565480412968457,
+            "value": 8.565480412968457e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.0000856320257631241 ms\nthreads: 1"
           },
@@ -20317,7 +20317,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_ParallelEfficiency/1000/real_time_stddev",
-            "value": 0.00005402608474641828,
+            "value": 5.402608474641828e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000054358937040813205 ms\nthreads: 1"
           },
@@ -21766,7 +21766,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.000029598130268109823,
+            "value": 2.9598130268109823e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000029583503956647193 ms\nthreads: 1"
           },
@@ -22655,7 +22655,7 @@ window.BENCHMARK_DATA = {
             "email": "makeshifted@gmail.com"
           },
           "id": "eb62ed5a37987691c6a36db3c4fb5e0f90aba172",
-          "message": "Add git config for data.js update step\n\nConfigure git user.name and user.email before committing on gh-pages\nbranch to fix \"Author identity unknown\" error.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "message": "Benchmark: v3.1.0\n\nAdd git config for data.js update step\n\nConfigure git user.name and user.email before committing on gh-pages\nbranch to fix \"Author identity unknown\" error.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
           "timestamp": "2026-01-20T16:20:12Z",
           "url": "https://github.com/zalo/manifold-benchmarks/commit/eb62ed5a37987691c6a36db3c4fb5e0f90aba172"
         },
@@ -23383,7 +23383,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 0.00006246980117056613,
+            "value": 6.246980117056613e-05,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00006246414425171034 ms\nthreads: 1"
           },
