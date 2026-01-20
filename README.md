@@ -100,6 +100,15 @@ To benchmark historical releases:
 
 The workflow will benchmark each tag sequentially and update the dashboard.
 
+### Version Compatibility Notes
+
+- **v1.0.0**: Not supported (requires CUDA which CI runners don't have)
+- **v2.0.0 - v2.2.1**: Uses minimal benchmark suite (no Hull operations)
+- **v2.2.2+**: Full benchmark suite supported
+- **v3.0.0+**: Full benchmark suite with all modern APIs
+
+The backfill workflow automatically detects which benchmark suite to use based on the manifold version's available APIs.
+
 ## Metrics Collected
 
 - **Timing**: Wall-clock time in nanoseconds/milliseconds

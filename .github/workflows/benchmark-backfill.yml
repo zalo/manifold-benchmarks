@@ -6,7 +6,8 @@ on:
       tags:
         description: 'Comma-separated tags to benchmark (e.g., v3.0.0,v3.1.0,v3.2.0)'
         required: true
-        default: 'v1.0.0,v2.0.0,v2.3.0,v2.5.0,v3.0.0,v3.2.0,v3.3.0'
+        # Note: v1.0.0 excluded (requires CUDA), start from v2.0.0
+        default: 'v2.0.0,v2.2.2,v2.3.0,v2.4.0,v2.5.0,v3.0.0,v3.1.0,v3.2.0,v3.3.0'
 
 permissions:
   contents: write
@@ -88,20 +89,41 @@ jobs:
         id: build-benchmarks
         if: steps.build-manifold.outputs.manifold_built == 'true'
         run: |
+          # Try to configure and build benchmarks
           if cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DMANIFOLD_PATH=${{ github.workspace }}/manifold 2>/dev/null; then
-            cmake --build build -j$(nproc)
-            echo "benchmarks_built=true" >> $GITHUB_OUTPUT
+
+            # Try building full benchmark first (has Hull, etc.)
+            if cmake --build build --target manifold_benchmark -j$(nproc) 2>/dev/null; then
+              echo "benchmarks_built=true" >> $GITHUB_OUTPUT
+              echo "benchmark_type=full" >> $GITHUB_OUTPUT
+              echo "::notice::Full benchmark build succeeded"
+            # Fall back to minimal benchmark (works with v2.0.0+)
+            elif cmake --build build --target manifold_benchmark_minimal -j$(nproc) 2>/dev/null; then
+              echo "benchmarks_built=true" >> $GITHUB_OUTPUT
+              echo "benchmark_type=minimal" >> $GITHUB_OUTPUT
+              echo "::notice::Minimal benchmark build succeeded (using v2.x compatible API)"
+            else
+              echo "benchmarks_built=false" >> $GITHUB_OUTPUT
+              echo "::warning::Failed to build any benchmarks for ${{ matrix.tag }}"
+            fi
           else
             echo "benchmarks_built=false" >> $GITHUB_OUTPUT
-            echo "::warning::Failed to build benchmarks for ${{ matrix.tag }}"
+            echo "::warning::Failed to configure benchmarks for ${{ matrix.tag }}"
           fi
 
       - name: Run benchmarks
         if: steps.build-benchmarks.outputs.benchmarks_built == 'true'
         run: |
-          ./build/manifold_benchmark \
+          # Run the appropriate benchmark based on what was built
+          if [ "${{ steps.build-benchmarks.outputs.benchmark_type }}" = "minimal" ]; then
+            BENCHMARK_BIN="./build/manifold_benchmark_minimal"
+          else
+            BENCHMARK_BIN="./build/manifold_benchmark"
+          fi
+
+          $BENCHMARK_BIN \
             --benchmark_format=json \
             --benchmark_out=benchmark_results.json \
             --benchmark_repetitions=3 \
