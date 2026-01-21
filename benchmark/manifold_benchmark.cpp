@@ -1,7 +1,10 @@
-// Manifold Performance Benchmarks
+// Manifold Performance Benchmarks - Focused Suite
 //
-// This benchmark suite measures the performance of core Manifold operations
-// including primitive creation, Boolean operations, and memory usage.
+// This benchmark suite measures the most representative/punishing Manifold operations:
+// - Boolean operations at high resolution (the core workload)
+// - Batch Boolean (large-scale parallel operations)
+// - Memory usage tracking
+// - CPU/parallel efficiency
 //
 // Run with: ./manifold_benchmark --benchmark_format=json --benchmark_out=results.json
 
@@ -15,6 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #endif
 
 using namespace manifold;
@@ -23,12 +27,11 @@ using namespace manifold;
 // Helper Functions
 // =============================================================================
 
-// Create a grid of touching ("kissing") convex hulls for batch Boolean tests
-static std::vector<Manifold> CreateKissingConvexHulls(int count) {
-  std::vector<Manifold> hulls;
-  hulls.reserve(count);
+// Create a grid of touching spheres for batch Boolean tests
+static std::vector<Manifold> CreateTouchingSpheres(int count) {
+  std::vector<Manifold> spheres;
+  spheres.reserve(count);
 
-  // Arrange in a cubic grid
   int n = static_cast<int>(std::cbrt(static_cast<double>(count))) + 1;
   double spacing = 2.0;  // Spheres of radius 1.0 will touch
 
@@ -36,14 +39,24 @@ static std::vector<Manifold> CreateKissingConvexHulls(int count) {
     int x = i % n;
     int y = (i / n) % n;
     int z = i / (n * n);
-    hulls.push_back(
-        Manifold::Sphere(1.0, 16).Translate(
-            {x * spacing, y * spacing, z * spacing}));
+    spheres.push_back(
+        Manifold::Sphere(1.0, 16).Translate({x * spacing, y * spacing, z * spacing}));
   }
-  return hulls;
+  return spheres;
 }
 
 #ifdef __linux__
+// Get current resident set size in KB
+static size_t GetCurrentRSSKb() {
+  std::ifstream status("/proc/self/statm");
+  if (!status.is_open()) return 0;
+
+  size_t size, resident;
+  status >> size >> resident;
+  long page_size = sysconf(_SC_PAGESIZE);
+  return (resident * page_size) / 1024;
+}
+
 // Get peak resident set size from /proc/self/status (Linux only)
 static size_t GetPeakRSSKb() {
   std::ifstream status("/proc/self/status");
@@ -63,48 +76,12 @@ static size_t GetPeakRSSKb() {
   return 0;
 }
 #else
+static size_t GetCurrentRSSKb() { return 0; }
 static size_t GetPeakRSSKb() { return 0; }
 #endif
 
 // =============================================================================
-// Primitive Creation Benchmarks
-// =============================================================================
-
-static void BM_SphereCreation(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  for (auto _ : state) {
-    auto sphere = Manifold::Sphere(1.0, resolution);
-    benchmark::DoNotOptimize(sphere);
-  }
-  state.SetComplexityN(resolution * resolution);
-}
-BENCHMARK(BM_SphereCreation)
-    ->RangeMultiplier(2)
-    ->Range(16, 512)
-    ->Complexity();
-
-static void BM_CubeCreation(benchmark::State& state) {
-  const double size = static_cast<double>(state.range(0));
-  for (auto _ : state) {
-    auto cube = Manifold::Cube({size, size, size});
-    benchmark::DoNotOptimize(cube);
-  }
-}
-BENCHMARK(BM_CubeCreation)->Arg(1)->Arg(10)->Arg(100);
-
-static void BM_CylinderCreation(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  for (auto _ : state) {
-    auto cylinder = Manifold::Cylinder(1.0, 1.0, 1.0, resolution);
-    benchmark::DoNotOptimize(cylinder);
-  }
-}
-BENCHMARK(BM_CylinderCreation)
-    ->RangeMultiplier(2)
-    ->Range(16, 256);
-
-// =============================================================================
-// Boolean Operation Benchmarks
+// Boolean Operations - High Resolution (Core Workload)
 // =============================================================================
 
 static void BM_BooleanUnion(benchmark::State& state) {
@@ -118,16 +95,14 @@ static void BM_BooleanUnion(benchmark::State& state) {
     benchmark::DoNotOptimize(result);
   }
 
-  state.counters["output_tris"] = static_cast<double>(result.NumTri());
+  state.counters["triangles"] = static_cast<double>(result.NumTri());
 }
-BENCHMARK(BM_BooleanUnion)
-    ->RangeMultiplier(2)
-    ->Range(16, 256);
+BENCHMARK(BM_BooleanUnion)->Arg(128)->Arg(256)->Unit(benchmark::kMillisecond);
 
 static void BM_BooleanDifference(benchmark::State& state) {
   const int resolution = static_cast<int>(state.range(0));
   Manifold sphere1 = Manifold::Sphere(1.0, resolution);
-  Manifold sphere2 = Manifold::Sphere(0.5, resolution).Translate({0.5, 0, 0});
+  Manifold sphere2 = Manifold::Sphere(0.8, resolution).Translate({0.5, 0, 0});
 
   Manifold result;
   for (auto _ : state) {
@@ -135,97 +110,102 @@ static void BM_BooleanDifference(benchmark::State& state) {
     benchmark::DoNotOptimize(result);
   }
 
-  state.counters["output_tris"] = static_cast<double>(result.NumTri());
+  state.counters["triangles"] = static_cast<double>(result.NumTri());
 }
-BENCHMARK(BM_BooleanDifference)
-    ->RangeMultiplier(2)
-    ->Range(16, 256);
+BENCHMARK(BM_BooleanDifference)->Arg(128)->Arg(256)->Unit(benchmark::kMillisecond);
 
-static void BM_BooleanIntersection(benchmark::State& state) {
+// =============================================================================
+// Batch Boolean - Large Scale (Most Representative)
+// =============================================================================
+
+static void BM_BatchBoolean(benchmark::State& state) {
+  const int count = static_cast<int>(state.range(0));
+  std::vector<Manifold> spheres = CreateTouchingSpheres(count);
+
+  size_t mem_before = GetCurrentRSSKb();
+  Manifold result;
+
+  for (auto _ : state) {
+    result = Manifold::BatchBoolean(spheres, OpType::Add);
+    benchmark::DoNotOptimize(result);
+  }
+
+  size_t mem_after = GetCurrentRSSKb();
+  size_t peak_mem = GetPeakRSSKb();
+
+  state.counters["spheres"] = static_cast<double>(count);
+  state.counters["triangles"] = static_cast<double>(result.NumTri());
+
+  if (peak_mem > 0) {
+    state.counters["peak_memory_MB"] = static_cast<double>(peak_mem) / 1024.0;
+  }
+  if (mem_after > mem_before) {
+    state.counters["memory_delta_MB"] = static_cast<double>(mem_after - mem_before) / 1024.0;
+  }
+}
+BENCHMARK(BM_BatchBoolean)
+    ->Arg(1000)
+    ->Arg(5000)
+    ->Unit(benchmark::kMillisecond);
+
+// =============================================================================
+// Convex Hull - Important Operation
+// =============================================================================
+
+static void BM_ConvexHull(benchmark::State& state) {
   const int resolution = static_cast<int>(state.range(0));
-  Manifold sphere1 = Manifold::Sphere(1.0, resolution);
-  Manifold sphere2 = Manifold::Sphere(1.0, resolution).Translate({0.5, 0, 0});
+  Manifold sphere = Manifold::Sphere(1.0, resolution);
 
   Manifold result;
   for (auto _ : state) {
-    result = sphere1 ^ sphere2;
+    result = sphere.Hull();
     benchmark::DoNotOptimize(result);
   }
 
+  state.counters["input_tris"] = static_cast<double>(sphere.NumTri());
   state.counters["output_tris"] = static_cast<double>(result.NumTri());
 }
-BENCHMARK(BM_BooleanIntersection)
-    ->RangeMultiplier(2)
-    ->Range(16, 256);
+BENCHMARK(BM_ConvexHull)->Arg(128)->Arg(256)->Unit(benchmark::kMicrosecond);
 
 // =============================================================================
-// Batch Boolean Benchmarks (the "kissing hulls" benchmark)
+// CPU Efficiency / Parallel Utilization
 // =============================================================================
-
-static void BM_BatchBooleanUnion(benchmark::State& state) {
-  const int count = static_cast<int>(state.range(0));
-  std::vector<Manifold> hulls = CreateKissingConvexHulls(count);
-
-  Manifold result;
-  for (auto _ : state) {
-    result = Manifold::BatchBoolean(hulls, OpType::Add);
-    benchmark::DoNotOptimize(result);
-  }
-
-  state.counters["hulls"] = static_cast<double>(count);
-  state.counters["output_tris"] = static_cast<double>(result.NumTri());
-}
-BENCHMARK(BM_BatchBooleanUnion)
-    ->Arg(100)
-    ->Arg(500)
-    ->Arg(1000)
-    ->Arg(5000)
-    ->Arg(10000)
-    ->Unit(benchmark::kMillisecond);
-
-// =============================================================================
-// Memory Benchmarks
-// =============================================================================
-
-static void BM_LargeUnionMemory(benchmark::State& state) {
-  const int count = static_cast<int>(state.range(0));
-
-  for (auto _ : state) {
-    std::vector<Manifold> hulls = CreateKissingConvexHulls(count);
-    auto result = Manifold::BatchBoolean(hulls, OpType::Add);
-    benchmark::DoNotOptimize(result);
-    benchmark::ClobberMemory();
-  }
-
-  size_t peak_kb = GetPeakRSSKb();
-  if (peak_kb > 0) {
-    state.counters["peak_memory_mb"] = benchmark::Counter(
-        static_cast<double>(peak_kb) / 1024.0, benchmark::Counter::kDefaults);
-  }
-}
-BENCHMARK(BM_LargeUnionMemory)
-    ->Arg(1000)
-    ->Arg(5000)
-    ->Unit(benchmark::kMillisecond);
-
-// =============================================================================
-// CPU Utilization / Parallel Efficiency Benchmarks
-// =============================================================================
-
-// This benchmark uses UseRealTime() so that cpu_time/real_time ratio
-// indicates parallel efficiency:
-// - Ratio > 1.0 = Good multi-threaded utilization
-// - Ratio ~= 1.0 = Mostly single-threaded
+// UseRealTime() enables CPU efficiency measurement:
+// cpu_time / real_time ratio indicates parallel utilization:
+// - Ratio > 1.0 = Good multi-threaded (e.g., 4.0 = 4x CPU utilization)
+// - Ratio ~= 1.0 = Single-threaded
 // - Ratio < 1.0 = Waiting on I/O or locks
 
 static void BM_ParallelEfficiency(benchmark::State& state) {
   const int count = static_cast<int>(state.range(0));
-  std::vector<Manifold> hulls = CreateKissingConvexHulls(count);
+  std::vector<Manifold> spheres = CreateTouchingSpheres(count);
+
+  double total_cpu_time = 0;
+  double total_real_time = 0;
 
   for (auto _ : state) {
-    auto result = Manifold::BatchBoolean(hulls, OpType::Add);
+    auto start_cpu = std::clock();
+    auto start_real = std::chrono::high_resolution_clock::now();
+
+    auto result = Manifold::BatchBoolean(spheres, OpType::Add);
     benchmark::DoNotOptimize(result);
+
+    auto end_real = std::chrono::high_resolution_clock::now();
+    auto end_cpu = std::clock();
+
+    total_cpu_time += static_cast<double>(end_cpu - start_cpu) / CLOCKS_PER_SEC;
+    total_real_time += std::chrono::duration<double>(end_real - start_real).count();
   }
+
+  // CPU efficiency: ratio of CPU time to wall-clock time
+  // Values > 1.0 indicate parallel utilization
+  if (total_real_time > 0) {
+    double efficiency = total_cpu_time / total_real_time;
+    state.counters["cpu_efficiency"] = benchmark::Counter(
+        efficiency, benchmark::Counter::kDefaults);
+  }
+
+  state.counters["spheres"] = static_cast<double>(count);
 }
 BENCHMARK(BM_ParallelEfficiency)
     ->Arg(1000)
@@ -234,82 +214,35 @@ BENCHMARK(BM_ParallelEfficiency)
     ->Unit(benchmark::kMillisecond);
 
 // =============================================================================
-// Transformation Benchmarks
+// Memory Stress Test
 // =============================================================================
 
-static void BM_Transform(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  Manifold sphere = Manifold::Sphere(1.0, resolution);
+static void BM_MemoryUsage(benchmark::State& state) {
+  const int count = static_cast<int>(state.range(0));
+
+  size_t peak_mem = 0;
 
   for (auto _ : state) {
-    auto result = sphere.Translate({1.0, 2.0, 3.0})
-                      .Rotate(45.0, 30.0, 60.0)
-                      .Scale({2.0, 2.0, 2.0});
+    std::vector<Manifold> spheres = CreateTouchingSpheres(count);
+    auto result = Manifold::BatchBoolean(spheres, OpType::Add);
     benchmark::DoNotOptimize(result);
+    benchmark::ClobberMemory();
+
+    size_t current_peak = GetPeakRSSKb();
+    if (current_peak > peak_mem) {
+      peak_mem = current_peak;
+    }
   }
-}
-BENCHMARK(BM_Transform)
-    ->RangeMultiplier(2)
-    ->Range(16, 256);
 
-// =============================================================================
-// Hull Benchmarks
-// =============================================================================
-
-static void BM_ConvexHull(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  Manifold sphere = Manifold::Sphere(1.0, resolution);
-
-  for (auto _ : state) {
-    auto result = sphere.Hull();
-    benchmark::DoNotOptimize(result);
+  if (peak_mem > 0) {
+    state.counters["peak_memory_MB"] = static_cast<double>(peak_mem) / 1024.0;
   }
+
+  state.counters["spheres"] = static_cast<double>(count);
 }
-BENCHMARK(BM_ConvexHull)
-    ->RangeMultiplier(2)
-    ->Range(16, 256);
-
-// =============================================================================
-// Query Benchmarks
-// =============================================================================
-
-static void BM_Volume(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  Manifold sphere = Manifold::Sphere(1.0, resolution);
-
-  for (auto _ : state) {
-    auto volume = sphere.Volume();
-    benchmark::DoNotOptimize(volume);
-  }
-}
-BENCHMARK(BM_Volume)
-    ->RangeMultiplier(2)
-    ->Range(16, 512);
-
-static void BM_SurfaceArea(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  Manifold sphere = Manifold::Sphere(1.0, resolution);
-
-  for (auto _ : state) {
-    auto area = sphere.SurfaceArea();
-    benchmark::DoNotOptimize(area);
-  }
-}
-BENCHMARK(BM_SurfaceArea)
-    ->RangeMultiplier(2)
-    ->Range(16, 512);
-
-static void BM_BoundingBox(benchmark::State& state) {
-  const int resolution = static_cast<int>(state.range(0));
-  Manifold sphere = Manifold::Sphere(1.0, resolution);
-
-  for (auto _ : state) {
-    auto box = sphere.BoundingBox();
-    benchmark::DoNotOptimize(box);
-  }
-}
-BENCHMARK(BM_BoundingBox)
-    ->RangeMultiplier(2)
-    ->Range(16, 512);
+BENCHMARK(BM_MemoryUsage)
+    ->Arg(1000)
+    ->Arg(5000)
+    ->Unit(benchmark::kMillisecond);
 
 // No BENCHMARK_MAIN() - we link with benchmark::benchmark_main
