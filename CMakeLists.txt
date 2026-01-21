@@ -163,7 +163,7 @@ set(BENCHMARK_ENABLE_GTEST_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
   googlebenchmark
   GIT_REPOSITORY https://github.com/google/benchmark.git
-  GIT_TAG v1.8.3
+  GIT_TAG v1.9.1
 )
 FetchContent_MakeAvailable(googlebenchmark)
 
@@ -185,6 +185,13 @@ target_link_libraries(manifold_benchmark_minimal PRIVATE
   manifold
   benchmark::benchmark_main
 )
+
+# Add extra include path for minimal benchmark to allow direct #include "manifold.h"
+# For v3.x: add the manifold subdirectory so manifold.h is found directly
+# For v2.x: the existing paths already work
+if(EXISTS "${MANIFOLD_PATH}/include/manifold/manifold.h")
+  target_include_directories(manifold_benchmark_minimal PRIVATE "${MANIFOLD_PATH}/include/manifold")
+endif()
 
 # Link dependency libraries if not using combined library
 if(NOT MANIFOLD_USE_COMBINED)

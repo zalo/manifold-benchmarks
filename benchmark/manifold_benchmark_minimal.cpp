@@ -46,7 +46,7 @@ static std::vector<Manifold> CreateTouchingSpheres(int count) {
     int z = i / (n * n);
     spheres.push_back(
         Manifold::Sphere(1.0, 16).Translate(
-            glm::vec3(x * spacing, y * spacing, z * spacing)));
+            {x * spacing, y * spacing, z * spacing}));
   }
   return spheres;
 }
@@ -93,7 +93,7 @@ static size_t GetPeakRSSKb() { return 0; }
 static void BM_BooleanUnion(benchmark::State& state) {
   const int resolution = static_cast<int>(state.range(0));
   Manifold sphere1 = Manifold::Sphere(1.0, resolution);
-  Manifold sphere2 = Manifold::Sphere(1.0, resolution).Translate(glm::vec3(0.5, 0, 0));
+  Manifold sphere2 = Manifold::Sphere(1.0, resolution).Translate({0.5, 0, 0});
 
   Manifold result;
   for (auto _ : state) {
@@ -108,7 +108,7 @@ BENCHMARK(BM_BooleanUnion)->Arg(128)->Arg(256)->Unit(benchmark::kMillisecond);
 static void BM_BooleanDifference(benchmark::State& state) {
   const int resolution = static_cast<int>(state.range(0));
   Manifold sphere1 = Manifold::Sphere(1.0, resolution);
-  Manifold sphere2 = Manifold::Sphere(0.8, resolution).Translate(glm::vec3(0.5, 0, 0));
+  Manifold sphere2 = Manifold::Sphere(0.8, resolution).Translate({0.5, 0, 0});
 
   Manifold result;
   for (auto _ : state) {

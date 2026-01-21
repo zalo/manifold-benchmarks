@@ -11,7 +11,9 @@
 #include <benchmark/benchmark.h>
 #include "manifold/manifold.h"
 
+#include <chrono>
 #include <cmath>
+#include <ctime>
 #include <vector>
 
 #ifdef __linux__
