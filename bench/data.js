@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1768928310418,
+  "lastUpdate": 1769312259647,
   "repoUrl": "https://github.com/zalo/manifold-benchmarks",
   "entries": {
     "Manifold Performance": [
@@ -744,7 +744,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 8.565480412968457e-05,
+            "value": 0.00008565480412968457,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.0000856320257631241 ms\nthreads: 1"
           },
@@ -912,7 +912,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_ParallelEfficiency/1000/real_time_stddev",
-            "value": 5.402608474641828e-05,
+            "value": 0.00005402608474641828,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000054358937040813205 ms\nthreads: 1"
           },
@@ -2361,7 +2361,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 2.9598130268109823e-05,
+            "value": 0.000029598130268109823,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000029583503956647193 ms\nthreads: 1"
           },
@@ -3978,7 +3978,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 6.246980117056613e-05,
+            "value": 0.00006246980117056613,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00006246414425171034 ms\nthreads: 1"
           },
@@ -5595,7 +5595,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 5.657450837635109e-05,
+            "value": 0.00005657450837635109,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.00005660289801666348 ms\nthreads: 1"
           },
@@ -7212,7 +7212,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/100_stddev",
-            "value": 1.3478001107588617e-05,
+            "value": 0.000013478001107588617,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000013434654576517208 ms\nthreads: 1"
           },
@@ -7236,7 +7236,7 @@ window.BENCHMARK_DATA = {
           },
           {
             "name": "BM_BatchBooleanUnion/500_stddev",
-            "value": 3.7824055454673096e-05,
+            "value": 0.000037824055454673096,
             "unit": "ms/iter",
             "extra": "iterations: 3\ncpu: 0.000037676666276708254 ms\nthreads: 1"
           },
@@ -8085,6 +8085,316 @@ window.BENCHMARK_DATA = {
             "value": 0.0018152140660248077,
             "unit": "ns/iter",
             "extra": "iterations: 3\ncpu: 0.0017953860497541164 ns\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "github-actions[bot]@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "github-actions[bot]",
+            "username": "github-actions[bot]",
+            "email": "github-actions[bot]@users.noreply.github.com"
+          },
+          "id": "6c9bc45e9bb86783af3e8add1c9d97e3ba41f9cf",
+          "message": "Fix benchmark compilation errors for v2.x and v3.x compatibility\n\n- Add missing <chrono> and <ctime> includes in full benchmark\n- Use brace initialization instead of glm::vec3 in minimal benchmark\n  for compatibility with both v2.x (glm) and v3.x (la) math libraries\n- Add extra include path for minimal benchmark to resolve manifold.h\n  directly when building against v3.x\n- Upgrade Google Benchmark from v1.8.3 to v1.9.1\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>",
+          "timestamp": "2026-01-21T02:29:18Z",
+          "url": "https://github.com/zalo/manifold-benchmarks/commit/6c9bc45e9bb86783af3e8add1c9d97e3ba41f9cf"
+        },
+        "date": 1769312259328,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "BM_BooleanUnion/128_mean",
+            "value": 151.30622420108097,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.00015129197529643033 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/128_median",
+            "value": 150.41998791325346,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.00015036697389779791 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/128_stddev",
+            "value": 2.525751764962556,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.000002529811942447888 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/128_cv",
+            "value": 16692.979937202814,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.016721388807907106 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/256_mean",
+            "value": 151.46634777680714,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0001514611903609999 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/256_median",
+            "value": 150.9990560049226,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.00015099257563497436 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/256_stddev",
+            "value": 1.5127049451132848,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0000015137484096869795 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanUnion/256_cv",
+            "value": 9987.06951951022,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.00999429890970115 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/128_mean",
+            "value": 149.4091884130804,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0001494048416449377 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/128_median",
+            "value": 148.4065071168695,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.00014840362662364237 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/128_stddev",
+            "value": 1.8908774926107346,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0000018896375401921821 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/128_cv",
+            "value": 12655.697502237374,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.012647766427027361 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/256_mean",
+            "value": 150.39860155208194,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.00015039441194849293 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/256_median",
+            "value": 150.53339246548848,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0001505287809174939 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/256_stddev",
+            "value": 1.8041466528245955,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0000018034438326124435 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BooleanDifference/256_cv",
+            "value": 11995.76747527026,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.01199142846630556 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/1000_mean",
+            "value": 0.02961923485960043,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.029618712446243374 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/1000_median",
+            "value": 0.02970153128425604,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.029700955392528816 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/1000_stddev",
+            "value": 0.0002014431446880996,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.00020141380083048104 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/1000_cv",
+            "value": 0.006801092116085037,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.006800221353174552 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/5000_mean",
+            "value": 0.17658664986107575,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.17655982970447065 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/5000_median",
+            "value": 0.17697609295277347,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.1769639916645615 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/5000_stddev",
+            "value": 0.0009416244185410855,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.0009315064827238884 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_BatchBoolean/5000_cv",
+            "value": 0.005332364701872312,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.00527586871987282 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/128_mean",
+            "value": 6953359.413861483,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 6953.054211881196 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/128_median",
+            "value": 6955762.55445544,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 6955.131188118838 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/128_stddev",
+            "value": 9182.617914917766,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 9.23032551000659 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/128_cv",
+            "value": 1.320601649989826,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0013275210042565258 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/256_mean",
+            "value": 26033648.148148604,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 26031.51368148141 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/256_median",
+            "value": 26036987.592592426,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 26031.559444444367 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/256_stddev",
+            "value": 71750.85319623601,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 72.11014683054935 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ConvexHull/256_cv",
+            "value": 2.7560813908187742,
+            "unit": "ns/iter",
+            "extra": "iterations: 5\ncpu: 0.0027701096337647032 us\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/1000/real_time_mean",
+            "value": 0.03140497016132637,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.031403498253410864 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/1000/real_time_median",
+            "value": 0.03133831625261328,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.03133747717879186 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/1000/real_time_stddev",
+            "value": 0.000497421426870249,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.0004973498369323346 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/1000/real_time_cv",
+            "value": 0.015838939642833928,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.01583740234667376 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/5000/real_time_mean",
+            "value": 0.1796926038095223,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.179684391042472 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/5000/real_time_median",
+            "value": 0.17995967670528937,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.17995228391248386 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/5000/real_time_stddev",
+            "value": 0.0008952254879212695,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.000896007318230542 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_ParallelEfficiency/5000/real_time_cv",
+            "value": 0.0049819829472237285,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.004986561787766823 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/1000_mean",
+            "value": 41.99959599999977,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 41.997303023529426 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/1000_median",
+            "value": 41.98566847058855,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 41.982163117647616 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/1000_stddev",
+            "value": 0.1728485178996785,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.1732161736162006 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/1000_cv",
+            "value": 0.004115480489376123,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.004124459456816892 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/5000_mean",
+            "value": 212.3370062666633,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 212.32982946666635 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/5000_median",
+            "value": 212.2341393333424,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 212.21524966666533 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/5000_stddev",
+            "value": 0.5813452697730767,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.5809640012735383 ms\nthreads: 1"
+          },
+          {
+            "name": "BM_MemoryUsage/5000_cv",
+            "value": 0.0027378424514613083,
+            "unit": "ms/iter",
+            "extra": "iterations: 5\ncpu: 0.0027361393485447316 ms\nthreads: 1"
           }
         ]
       }
